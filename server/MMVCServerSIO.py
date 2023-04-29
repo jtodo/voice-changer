@@ -24,6 +24,7 @@ setup_loggers()
 def setupArgParser():
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", type=int, default=18888, help="port")
+    parser.add_argument("--colab", type=strtobool, default=False, help="use colab")
     parser.add_argument("--https", type=strtobool, default=False, help="use https")
     parser.add_argument(
         "--httpsKey", type=str, default="ssl.key", help="path for the key of https"
@@ -211,23 +212,32 @@ if __name__ == "__main__":
             # log_level="warning"
         )
     else:
-        p = mp.Process(name="p", target=localServer)
-        p.start()
-        try:
-            if sys.platform.startswith("win"):
-                process = subprocess.Popen(
-                    [NATIVE_CLIENT_FILE_WIN, "-u", f"http://localhost:{PORT}/"]
-                )
-                return_code = process.wait()
-                print("client closed.")
-                p.terminate()
-            elif sys.platform.startswith("darwin"):
-                process = subprocess.Popen(
-                    [NATIVE_CLIENT_FILE_MAC, "-u", f"http://localhost:{PORT}/"]
-                )
-                return_code = process.wait()
-                print("client closed.")
-                p.terminate()
+        # HTTP サーバ起動
+        if args.colab == True:
+            uvicorn.run(
+                f"{os.path.basename(__file__)[:-3]}:app_socketio",
+                host="0.0.0.0",
+                port=int(PORT),
+                log_level="warning"
+            )
+        else:
+            p = mp.Process(name="p", target=localServer)
+            p.start()
+            try:
+                if sys.platform.startswith("win"):
+                    process = subprocess.Popen(
+                        [NATIVE_CLIENT_FILE_WIN, "-u", f"http://localhost:{PORT}/"]
+                    )
+                    return_code = process.wait()
+                    print("client closed.")
+                    p.terminate()
+                elif sys.platform.startswith("darwin"):
+                    process = subprocess.Popen(
+                        [NATIVE_CLIENT_FILE_MAC, "-u", f"http://localhost:{PORT}/"]
+                    )
+                    return_code = process.wait()
+                    print("client closed.")
+                    p.terminate()
 
-        except Exception as e:
-            print(e)
+            except Exception as e:
+                print(e)
