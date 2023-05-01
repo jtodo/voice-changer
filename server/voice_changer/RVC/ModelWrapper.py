@@ -4,7 +4,7 @@ import numpy as np
 import json
 
 # providers = ['OpenVINOExecutionProvider', "CUDAExecutionProvider", "DmlExecutionProvider", "CPUExecutionProvider"]
-providers = ["CPUExecutionProvider"]
+providers = ["CUDAExecutionProvider"]
 
 
 class ModelWrapper:
